@@ -24,17 +24,18 @@ void ofApp::setup()
 	dirLight.setDirectional();
 	dirLight.setSpecularColor(ofColor(255));
 	dirLight.setDiffuseColor(ofColor(255));
-	dirLight.setAmbientColor(ofColor(255));
+	dirLight.setAmbientColor(ofColor(50));
+	dirLight.setOrientation(glm::vec3(170.0f, 0.0f, 0.0f));
 
 	camera.setPosition(ofVec3f(0, 5.f, 10.f));
 	camera.lookAt(ofVec3f(0, 0, 0), ofVec3f(0, 1, 0));
 	camera.setNearClip(0.1f);
 
 
-	createWorld(/*world*/);
+	createWorld();
 }
 
-void ofApp::createWorld(/*ofxBulletWorldRigid& world*/)
+void ofApp::createWorld()
 {
 	world = new ofxBulletWorldRigid();
 	world->setup();
@@ -55,7 +56,6 @@ void ofApp::createWorld(/*ofxBulletWorldRigid& world*/)
 
 	sphere = new ofxBulletSphere();
 	sphere->create(world->world, ofVec3f(0, -1, 0), 0.1, .50);
-	//sphere->getCollisionObject()->setUserIndex(60);
 	sphere->getCollisionObject()->setUserPointer(sphereUserData);
 	sphere->setActivationState(DISABLE_DEACTIVATION);
 	sphere->getRigidBody()->setAngularFactor(btVector3(1, 1, 1));
@@ -76,11 +76,10 @@ void ofApp::createWorld(/*ofxBulletWorldRigid& world*/)
 			random_shuffle(shapeColors.begin(), shapeColors.end());
 		}
 		ofxBulletBox* box = new ofxBulletBox();
-		Boxes *currentBox = new Boxes(box, to_string(i), shapeColors[xOffset]/*shapeColors[rand() % shapeColors.size()]*/);
+		Boxes *currentBox = new Boxes(box, to_string(i), shapeColors[xOffset]);
 		box->create(world->world, ofVec3f(-8 + (4 * xOffset), -4, -2 * zOffset - 10), .05, 6, 2, 2);
-		box->getCollisionObject()->setUserPointer(currentBox->userData/*otherUserData[i]*/);
+		box->getCollisionObject()->setUserPointer(currentBox->userData);
 		box->setActivationState(DISABLE_DEACTIVATION);
-		//box->getRigidBody()->setAngularFactor(btVector3(0, 0, 0));
 		box->getRigidBody()->setActivationState(4);
 		box->add();
 
@@ -89,10 +88,10 @@ void ofApp::createWorld(/*ofxBulletWorldRigid& world*/)
 	}
 
 	sphereUserData->color = lvl1Boxes[rand() % lvl1Boxes.size()]->userData->color;
-	//box_zvel = -4.0f;
+	box_zvel = -4.0f;
 }
 
-void ofApp::clearWorld(/*ofxBulletWorldRigid& world*/)
+void ofApp::clearWorld()
 {
 	box_xvel = 0, box_zvel = 0, box_yvel = -3.0;
 	hasJumped = false;
@@ -119,7 +118,6 @@ void ofApp::update()
 		btPersistentManifold* contactManifold = world->dispatcher->getManifoldByIndexInternal(i);
 		if (contactManifold->getBody0()->getUserIndex() == 10 || contactManifold->getBody1()->getUserIndex() == 10)
 		{
-			//cout << "continuing" << endl;
 			continue;
 		}
 		const btCollisionObject* obA = contactManifold->getBody0();
@@ -134,7 +132,6 @@ void ofApp::update()
 				{
 
 					int idRemove = atoi(((myShapes*)obA->getUserIndex())->ID.c_str());
-					//cout << idRemove << endl;
 				}
 				else
 				{
@@ -144,14 +141,9 @@ void ofApp::update()
 						lvl1Boxes[idRemove]->body->getRigidBody()->applyCentralImpulse(btVector3(0.0, 0.6, -0.6));
 						switchColor = true;
 						switchTime = ofGetElapsedTimeMillis() + 400;
-						//sphereUserData->color = shapeColors[rand() % shapeColors.size()];
-						//cout << "only once" << endl;
-
-						//deadBricks.push_back((myShapes*)obB->getUserIndex());
+						
 					}
 				}
-
-				//cout << "Collision between same colors!" << endl;
 			}
 			else
 			{
@@ -159,7 +151,6 @@ void ofApp::update()
 				box_yvel = 0;
 				box_zvel = 0;
 				gameActive = false;
-				//cout << "Dead collision" << endl;
 			}
 		}
 	}
@@ -177,7 +168,8 @@ void ofApp::update()
 void ofApp::draw()
 {
 	glEnable(GL_DEPTH_TEST);
-	//ofEnableLighting();
+	ofEnableLighting();
+	dirLight.enable();
 	//easyCam.begin();
 	camera.begin();
 	camera.setGlobalPosition(sphere->getPosition().x, sphere->getPosition().y + 5, sphere->getPosition().z + 10);
@@ -258,7 +250,7 @@ void ofApp::draw()
 		sphereUserData->color = shapeColors[rand() % shapeColors.size()];
 		switchColor = false;
 	}
-
+	dirLight.disable();
 	//easyCam.end();
 	camera.end();
 }

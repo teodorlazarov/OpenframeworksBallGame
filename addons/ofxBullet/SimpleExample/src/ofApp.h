@@ -30,7 +30,6 @@ private:
 	{
 		myShapes* userData;
 		ofxBulletBox* body;
-		//int ID;
 
 		Boxes(ofxBulletBox* bod, std::string id, ofColor colour)
 		{
@@ -38,7 +37,6 @@ private:
 			body = bod;
 			userData->ID = id;
 			userData->color = colour;
-			//ID = id;
 		}
 		~Boxes()
 		{
@@ -62,8 +60,8 @@ public:
 	void dragEvent(ofDragInfo dragInfo);
 	void gotMessage(ofMessage msg);
 
-	void createWorld(/*ofxBulletWorldRigid& world*/);
-	void clearWorld(/*ofxBulletWorldRigid& world*/);
+	void createWorld();
+	void clearWorld();
 
 	ofxBulletWorldRigid*			world;
 	ofxBulletBox*				ground;
